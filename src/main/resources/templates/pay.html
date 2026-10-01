@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<body>
+<main class="detail">
+	<a class="back" th:href="@{/orders}">Orders</a>
+	<p class="eyebrow">Checkout</p>
+	<h1 th:text="|Pay order ${order.id}|">Pay order 1</h1>
+	<p class="meta">
+		<span th:text="|${order.quantity} tickets|">2 tickets</span>
+		<span class="price" th:text="${#numbers.formatDecimal(order.amount, 1, 'COMMA', 2, 'POINT')}">50.00</span>
+	</p>
+	<p class="alert" th:if="${error}" th:text="${error}">Payment declined</p>
+
+	<form class="form" th:if="${order.status.name() == 'AWAITING_PAYMENT'}" th:action="@{/orders/{id}/pay(id=${order.id})}" method="post">
+		<th:block th:replace="~{fragments :: csrf}"></th:block>
+		<p class="quiet">Demo checkout. Nothing is sent to a bank. Use 4242424242424242 to pay, or 4000000000000002 to see a decline.</p>
+		<label class="field">Card number <input type="text" name="cardNumber" inputmode="numeric" autocomplete="cc-number" required></label>
+		<label class="field">Expiry <input type="text" name="expiry" placeholder="MM/YY" autocomplete="cc-exp" required></label>
+		<label class="field">CVC <input type="text" name="cvc" inputmode="numeric" autocomplete="cc-csc" required></label>
+		<button class="button" type="submit">Pay</button>
+	</form>
+	<p th:if="${order.status.name() != 'AWAITING_PAYMENT'}">This order is <span th:text="${order.status}">CONFIRMED</span>.</p>
+</main>
+</body>
+</html>

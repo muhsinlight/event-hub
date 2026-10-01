@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<body>
+<main class="detail">
+	<a class="back" th:href="@{/}">All events</a>
+	<p class="eyebrow">Seller</p>
+	<h1>New event</h1>
+	<p class="alert" th:if="${error}" th:text="${error}">Check the form</p>
+	<form class="form" th:action="@{/events}" method="post">
+		<th:block th:replace="~{fragments :: csrf}"></th:block>
+		<label class="field">Name <input type="text" name="name" required></label>
+		<label class="field">Venue <input type="text" name="venue" required></label>
+		<label class="field">Starts <input type="datetime-local" name="startsAt" required></label>
+		<label class="field">Status
+			<select name="status">
+				<option th:each="status : ${statuses}" th:value="${status}" th:text="${status}">DRAFT</option>
+			</select>
+		</label>
+		<button class="button" type="submit">Create</button>
+	</form>
+</main>
+</body>
+</html>

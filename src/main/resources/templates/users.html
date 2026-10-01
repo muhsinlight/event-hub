@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<body>
+<main class="detail">
+	<p class="eyebrow">Admin</p>
+	<h1>People</h1>
+	<p class="lede">New accounts are buyers. Grant seller access here.</p>
+	<p class="alert" th:if="${error}" th:text="${error}">Could not update role</p>
+	<ul class="types">
+		<li th:each="user : ${users.content}">
+			<div>
+				<strong th:text="${user.name}">Ada</strong>
+				<span th:text="${user.email}">ada@eventhub.local</span>
+			</div>
+			<div class="type-side">
+				<span class="status" th:text="${user.role}">USER</span>
+				<form th:if="${user.role.name() != 'ADMIN'}" th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post">
+					<th:block th:replace="~{fragments :: csrf}"></th:block>
+					<input type="hidden" name="role" th:value="${user.role.name() == 'USER' ? 'SELLER' : 'USER'}">
+					<button class="button" type="submit"
+							th:text="${user.role.name() == 'USER' ? 'Make seller' : 'Make user'}">Make seller</button>
+				</form>
+			</div>
+		</li>
+	</ul>
+	<nav th:replace="~{fragments :: pager(${users}, '/admin/users')}"></nav>
+</main>
+</body>
+</html>

@@ -1,0 +1,74 @@
+# --- Build / Maven ---
+target/
+!.mvn/wrapper/maven-wrapper.properties
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties
+.flattened-pom.xml
+
+# Wrapper JAR is downloaded on first ./mvnw run (keeps repo free of binaries).
+.mvn/wrapper/maven-wrapper.jar
+
+# --- Secrets & local config (never commit) ---
+.env
+.env.*
+!.env.example
+application-local.properties
+application-local.yml
+application-local.yaml
+**/application-local.properties
+secrets/
+*.pem
+*.key
+*.p12
+*.jks
+credentials.json
+service-account*.json
+
+# --- Docker local overrides ---
+docker-compose.override.yml
+docker-compose.override.yaml
+compose.override.yaml
+
+# --- Logs & crash dumps ---
+*.log
+logs/
+hs_err_pid*
+replay_pid*
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --- IDE (machine-specific; do not publish JDK paths etc.) ---
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+*.swp
+*.swo
+*~
+
+### Eclipse / STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+
+# Spring Initializr noise
+HELP.md

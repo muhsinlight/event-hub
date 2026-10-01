@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<body>
+<main>
+	<section class="hero">
+		<p class="eyebrow">Box office</p>
+		<h1>On the board</h1>
+		<p class="lede">Published shows, venues, and the tickets still left.</p>
+		<p class="alert" th:if="${param.denied}">This account can't open that page.</p>
+	</section>
+
+	<section class="board" th:if="${!events.empty}">
+		<a class="ticket" th:each="event : ${events.content}" th:href="@{/events/{id}(id=${event.id})}"
+				th:classappend="${' is-' + #strings.toLowerCase(event.status)}">
+			<div class="ticket-date">
+				<span class="day" th:text="${#temporals.format(event.startsAt, 'd')}">12</span>
+				<span class="month" th:text="${#temporals.format(event.startsAt, 'MMM')}">Sep</span>
+			</div>
+			<div class="ticket-body">
+				<p class="status" th:text="${event.status}">PUBLISHED</p>
+				<h2 th:text="${event.name}">Night show</h2>
+				<p class="venue" th:text="${event.venue}">Arena</p>
+				<p class="time" th:text="${#temporals.format(event.startsAt, 'HH:mm')}">20:00</p>
+			</div>
+		</a>
+	</section>
+
+	<section class="empty" th:if="${events.empty}">
+		<h2>The board is clear</h2>
+		<p>Published events will take a place here.</p>
+	</section>
+	<nav th:replace="~{fragments :: pager(${events}, '/')}"></nav>
+</main>
+</body>
+</html>

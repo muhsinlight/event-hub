@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<body>
+<main class="detail">
+	<a class="back" th:href="@{/}">All events</a>
+	<p class="status" th:text="${event.status}" th:classappend="${'is-' + #strings.toLowerCase(event.status)}">PUBLISHED</p>
+	<h1 th:text="${event.name}">Night show</h1>
+	<p class="meta">
+		<span th:text="${event.venue}">Arena</span>
+		<span th:text="${#temporals.format(event.startsAt, 'EEEE d MMMM yyyy, HH:mm')}">Saturday 12 September 2026, 20:00</span>
+	</p>
+
+	<p class="alert" th:if="${error}" th:text="${error}">Could not buy</p>
+
+	<section class="types">
+		<h2>Tickets</h2>
+		<ul th:if="${!ticketTypes.isEmpty()}">
+			<li th:each="type : ${ticketTypes}">
+				<div>
+					<strong th:text="${type.name}">General</strong>
+					<span th:if="${type.quota - type.soldCount > 0}"
+							th:text="|${type.quota - type.soldCount} left of ${type.quota}|">8 left of 10</span>
+					<span th:if="${type.quota - type.soldCount <= 0}">Sold out</span>
+				</div>
+				<div class="type-side">
+					<span class="price" th:text="${#numbers.formatDecimal(type.price, 1, 'COMMA', 2, 'POINT')}">25.00</span>
+					<form class="buy" th:if="${account != null and account.buyer() and event.status.name() == 'PUBLISHED' and type.quota > type.soldCount}"
+							th:action="@{/orders}" method="post">
+						<th:block th:replace="~{fragments :: csrf}"></th:block>
+						<input type="hidden" name="eventId" th:value="${event.id}">
+						<input type="hidden" name="ticketTypeId" th:value="${type.id}">
+						<input type="number" name="quantity" value="1" min="1" th:max="${type.quota - type.soldCount}">
+						<button class="button" type="submit">Checkout</button>
+					</form>
+				</div>
+			</li>
+		</ul>
+		<p class="quiet" th:if="${ticketTypes.isEmpty()}">No ticket types yet.</p>
+		<p th:if="${account == null and event.status.name() == 'PUBLISHED'}">
+			<a th:href="@{/login}">Log in to buy</a>
+		</p>
+		<form class="form" th:if="${account != null and account.seller()}"
+				th:action="@{/events/{id}/ticket-types(id=${event.id})}" method="post">
+			<th:block th:replace="~{fragments :: csrf}"></th:block>
+			<h2>Add a ticket type</h2>
+			<label class="field">Name <input type="text" name="name" required></label>
+			<label class="field">Price <input type="number" name="price" min="0.01" step="0.01" required></label>
+			<label class="field">Quota <input type="number" name="quota" min="1" required></label>
+			<button class="button" type="submit">Add</button>
+		</form>
+	</section>
+</main>
+</body>
+</html>

@@ -1,0 +1,72 @@
+# Coolify: Build Pack = Docker Compose, Compose Location = docker-compose.yml.
+# Domain field for the app service: https://your-domain:8080
+# Local development keeps using compose.yaml (Postgres only).
+
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SERVICE_URL_APP_8080: /
+      SPRING_DOCKER_COMPOSE_ENABLED: "false"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-validate}
+      SPRING_JPA_SHOW_SQL: "false"
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-mydatabase}
+      DB_USERNAME: ${SERVICE_USER_POSTGRES}
+      DB_PASSWORD: ${SERVICE_PASSWORD_64_POSTGRES}
+      JWT_SECRET: ${SERVICE_PASSWORD_64_JWT}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-900000}
+      JWT_REFRESH_EXPIRATION_MS: ${JWT_REFRESH_EXPIRATION_MS:-604800000}
+      RESEND_API_KEY: ${RESEND_API_KEY:?}
+      RESEND_FROM: ${RESEND_FROM:?}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?}
+      COOKIE_SECURE: "true"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-mydatabase}
+      POSTGRES_USER: ${SERVICE_USER_POSTGRES}
+      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_64_POSTGRES}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  postgres-backup:
+    image: prodrigestivill/postgres-backup-local:16
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-mydatabase}
+      POSTGRES_USER: ${SERVICE_USER_POSTGRES}
+      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_64_POSTGRES}
+      SCHEDULE: "@daily"
+      BACKUP_ON_START: "TRUE"
+      BACKUP_KEEP_DAYS: 7
+      BACKUP_KEEP_WEEKS: 4
+      BACKUP_KEEP_MONTHS: 6
+    volumes:
+      - postgres-backups:/backups
+
+volumes:
+  postgres-data:
+  postgres-backups:

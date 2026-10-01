@@ -1,0 +1,24 @@
+---
+description: Event Hub project map. Use instead of scanning the whole repo.
+alwaysApply: true
+---
+
+# Event Hub
+
+Spring Boot 4.1 / Java 21 REST API for events, ticket types, JWT auth, purchase, QR, check-in. Package: `dev.takuma.event_hub`. Thymeleaf pages live in `web/` and `templates/`.
+
+**Do not glob or read the entire `src` tree to rediscover architecture.** Open only files you will change. For endpoints, entities, and security details, read `.cursor/skills/event-hub/`.
+
+| Layer | Path |
+|---|---|
+| Controllers + request records | `controller/` |
+| Thymeleaf pages | `web/` + `src/main/resources/templates/` |
+| Business logic | `service/` |
+| JPA entities | `entity/` |
+| Spring Data repos | `repository/` |
+| JWT / Security | `security/` |
+| `ApiResponse`, `ApiException` | `utils/` |
+
+Flow: `Event` → `TicketType` (quota/soldCount) → authenticated `Order` + `Ticket`s (UUID code, QR). Postgres via `compose.yaml`. Config keys in `application.properties` (`app.jwt.*`).
+
+Public: `POST /api/auth/**`, `GET /api/events/**`, `GET /api/tickets/*/qr`. Everything else needs `Authorization: Bearer`.

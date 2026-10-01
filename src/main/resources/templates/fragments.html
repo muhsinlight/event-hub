@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+	<th:block th:fragment="csrf">
+		<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+	</th:block>
+
+	<nav class="pager" th:fragment="pager(listing, path)" th:if="${listing.totalPages > 1}">
+		<a th:if="${listing.page > 0}" th:href="@{|${path}?page=${listing.page - 1}&size=${listing.size}|}">Previous</a>
+		<span th:text="${listing.page + 1} + ' / ' + ${listing.totalPages}">1 / 2</span>
+		<a th:if="${listing.page + 1 < listing.totalPages}"
+				th:href="@{|${path}?page=${listing.page + 1}&size=${listing.size}|}">Next</a>
+	</nav>
+</body>
+</html>

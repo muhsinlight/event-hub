@@ -1,0 +1,29 @@
+# Keep image build context small; never bake secrets into layers.
+.git
+.github
+.cursor
+.idea
+.vscode
+
+target/
+build/
+
+.env
+.env.*
+!.env.example
+
+*.md
+AGENTS.md
+
+# Local dev only (Coolify uses docker-compose.yml + Dockerfile)
+compose.yaml
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# Tests are skipped in Dockerfile; omit from context
+src/test
+
+*.log
+logs/
+.DS_Store
+Thumbs.db

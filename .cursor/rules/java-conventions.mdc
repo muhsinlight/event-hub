@@ -1,0 +1,25 @@
+---
+description: Java style and layering for Event Hub
+globs: "**/*.java"
+alwaysApply: false
+---
+
+# Java conventions
+
+- Tabs, constructor injection, no Lombok, no `@Autowired`.
+- `service/` is the interface. `service/impl/` is the `@Service` class. Controllers depend on the interface and receive DTOs.
+- API bodies are records under `dto/{auth,user,event,order,ticket,common}/`. Entities stay in the persistence layer. Map with `from(...)` on the response record.
+- Controllers return `ApiResponse.builder()...response()`. Mutating endpoints set `status` + `message`.
+- Domain errors: `ApiException.orNotFound(...)` or `ApiException.conflict(...)`. Never leak stack traces.
+- `@Transactional` on purchase, cancel, check-in. Quota changes use `TicketTypeRepository.findByIdForUpdate`.
+- JWT subject and `Authentication.getName()` are the user email.
+- Password is `@JsonIgnore` on `User`. `Ticket.qr` is `@Transient`. API JSON is DTO records, not entities.
+- Secrets (`JWT_SECRET`, `DB_PASSWORD`, `POSTGRES_PASSWORD`, `RESEND_API_KEY`, `RESEND_FROM`) live in env / `.env`, not in `application.properties`.
+- Table names: `users`, `orders`, `auth_sessions`. IDs are `GenerationType.IDENTITY`.
+
+## Tests
+
+- Never use the `new` keyword in test code. Build entities with their static factories through `TestData`; use static factories from libraries (`Executors.newFixedThreadPool`, `HttpClient.newHttpClient`, `assertDoesNotThrow`).
+- Unit tests: `@ExtendWith(MockitoExtension.class)`, collaborators and request records as `@Mock`, class under test as `@InjectMocks`.
+- Integration tests: extend `ApiIntegrationTest` (`@SpringBootTest` + MockMvc, profile `test`). Dependencies are `private final` fields set in the constructor; `junit-platform.properties` enables `spring.test.constructor.autowire.mode=all`, so no `@Autowired`. Send requests through `perform(...)`.
+- Database is real Postgres via Testcontainers `jdbc:tc:` URL in `application-test.properties` (Docker must be running). Use unique emails/names per test instead of cleaning tables.

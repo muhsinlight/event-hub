@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<body>
+<main class="detail">
+	<a class="back" th:href="@{/}">All events</a>
+	<h1>Not on the board</h1>
+	<p class="lede" th:text="${message}">Event not found</p>
+</main>
+</body>
+</html>

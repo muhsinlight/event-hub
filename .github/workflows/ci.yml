@@ -1,0 +1,45 @@
+# Runs tests in GitHub (Docker on runner for Testcontainers). Your PC does not need mvn test on every push.
+# Optional: set repo secret COOLIFY_DEPLOY_WEBHOOK to redeploy private staging after green tests on main.
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Run tests
+        run: ./mvnw -B test
+
+  deploy-staging:
+    needs: test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Coolify redeploy
+        env:
+          COOLIFY_DEPLOY_WEBHOOK: ${{ secrets.COOLIFY_DEPLOY_WEBHOOK }}
+        run: |
+          if [ -z "$COOLIFY_DEPLOY_WEBHOOK" ]; then
+            echo "COOLIFY_DEPLOY_WEBHOOK secret not set — tests passed; skipping deploy."
+            exit 0
+          fi
+          curl -fsS -X POST "$COOLIFY_DEPLOY_WEBHOOK"
+          echo "Coolify deploy triggered."

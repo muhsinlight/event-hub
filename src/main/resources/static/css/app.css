@@ -1,0 +1,362 @@
+:root {
+	--ink: #121612;
+	--paper: #f4efe4;
+	--card: #1c231d;
+	--line: #314036;
+	--muted: #b7ad9c;
+	--gold: #e7b84a;
+	--sold: #d4654a;
+	--ok: #8fbf7a;
+	--shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+	--serif: "Fraunces", "Iowan Old Style", Georgia, serif;
+	--sans: "Outfit", "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+	margin: 0;
+	min-height: 100vh;
+	color: var(--paper);
+	background:
+		radial-gradient(1200px 500px at 10% -10%, rgba(231, 184, 74, 0.16), transparent 55%),
+		linear-gradient(180deg, #181e19 0%, var(--ink) 42%);
+	font-family: var(--sans);
+	font-weight: 400;
+}
+
+a { color: inherit; }
+
+.top, .foot, main {
+	width: min(920px, calc(100% - 32px));
+	margin-inline: auto;
+}
+
+.top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 28px 0 8px;
+}
+
+.brand {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	text-decoration: none;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	font-size: 0.92rem;
+}
+
+.mark {
+	width: 14px;
+	height: 18px;
+	border-radius: 3px 7px 7px 3px;
+	background: var(--gold);
+	box-shadow: inset -4px 0 0 rgba(18, 22, 18, 0.35);
+}
+
+.nav {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 14px 18px;
+}
+
+.nav a, .nav button {
+	color: var(--muted);
+	text-decoration: none;
+	font: inherit;
+	font-size: 0.92rem;
+	background: none;
+	border: 0;
+	padding: 0;
+	cursor: pointer;
+}
+
+.nav a:hover, .nav button:hover { color: var(--paper); }
+
+.form {
+	display: grid;
+	gap: 14px;
+	max-width: 420px;
+	margin-top: 22px;
+}
+
+.field {
+	display: grid;
+	gap: 6px;
+	color: var(--muted);
+	font-size: 0.92rem;
+}
+
+.field input, .field select, .buy input {
+	background: var(--card);
+	color: var(--paper);
+	border: 1px solid var(--line);
+	border-radius: 10px;
+	padding: 12px 14px;
+	font: inherit;
+}
+
+.button {
+	justify-self: start;
+	background: var(--gold);
+	color: var(--ink);
+	border: 0;
+	border-radius: 999px;
+	padding: 10px 16px;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.alert { color: var(--sold); }
+
+.notice { color: var(--ok); }
+
+.type-side {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 8px;
+}
+
+.buy {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.buy input { width: 4.5rem; padding: 8px 10px; }
+
+.qr {
+	display: block;
+	width: 180px;
+	height: 180px;
+	margin: 18px 0;
+	background: white;
+	border-radius: 12px;
+	padding: 8px;
+}
+
+.codes {
+	list-style: none;
+	padding: 0;
+	display: grid;
+	gap: 8px;
+}
+
+.codes a { color: var(--gold); }
+
+.hero { padding: 48px 0 28px; }
+
+.eyebrow {
+	margin: 0 0 8px;
+	color: var(--gold);
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	font-size: 0.75rem;
+	font-weight: 600;
+}
+
+h1 {
+	margin: 0;
+	font-family: var(--serif);
+	font-weight: 560;
+	font-size: clamp(3rem, 8vw, 5.4rem);
+	line-height: 0.92;
+	letter-spacing: -0.03em;
+}
+
+.lede, .quiet {
+	color: var(--muted);
+	font-size: 1.05rem;
+}
+
+.board {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 14px;
+	padding-bottom: 24px;
+}
+
+.board .ticket-body h2 {
+	font-size: 1.35rem;
+}
+
+.ticket {
+	display: grid;
+	grid-template-columns: 92px 1fr;
+	text-decoration: none;
+	background: var(--card);
+	border-radius: 18px;
+	box-shadow: var(--shadow);
+	overflow: hidden;
+	position: relative;
+}
+
+.ticket::before {
+	content: "";
+	position: absolute;
+	top: 12px;
+	bottom: 12px;
+	left: 92px;
+	border-left: 1px dashed var(--line);
+}
+
+.ticket:hover { transform: translateY(-2px); }
+
+.ticket-date {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	background: #243028;
+	color: var(--gold);
+}
+
+.day {
+	font-family: var(--serif);
+	font-size: 2rem;
+	line-height: 1;
+}
+
+.month {
+	margin-top: 4px;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	font-size: 0.72rem;
+}
+
+.ticket-body { padding: 18px 20px 18px 28px; }
+
+.ticket-body h2 {
+	margin: 4px 0 6px;
+	font-family: var(--serif);
+	font-weight: 560;
+	font-size: 1.7rem;
+}
+
+.venue, .time, .status, .meta { margin: 0; }
+
+.venue { color: var(--paper); }
+
+.time { margin-top: 8px; color: var(--muted); }
+
+.status {
+	color: var(--ok);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	font-size: 0.72rem;
+	font-weight: 600;
+}
+
+.is-cancelled .status,
+.status.is-cancelled { color: var(--sold); }
+
+.is-cancelled { opacity: 0.72; }
+
+.empty {
+	padding: 28px;
+	border: 1px dashed var(--line);
+	border-radius: 18px;
+}
+
+.empty h2 {
+	margin: 0 0 8px;
+	font-family: var(--serif);
+	font-weight: 560;
+}
+
+.detail { padding: 36px 0 12px; }
+
+.back {
+	display: inline-block;
+	margin-bottom: 22px;
+	color: var(--muted);
+	text-decoration: none;
+}
+
+.back:hover { color: var(--paper); }
+
+.meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 18px;
+	margin-top: 14px;
+	color: var(--muted);
+}
+
+.types { margin-top: 36px; }
+
+.types h2 {
+	margin: 0 0 12px;
+	font-family: var(--serif);
+	font-weight: 560;
+	font-size: 1.8rem;
+}
+
+.types ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 10px;
+}
+
+.types li {
+	display: flex;
+	justify-content: space-between;
+	gap: 16px;
+	align-items: center;
+	padding: 16px 18px;
+	background: var(--card);
+	border-radius: 14px;
+}
+
+.types li strong { display: block; font-weight: 600; }
+
+.types li span { color: var(--muted); font-size: 0.92rem; }
+
+.price {
+	font-family: var(--serif);
+	font-size: 1.6rem;
+	color: var(--gold) !important;
+}
+
+.pager {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 18px;
+	padding: 8px 0 36px;
+}
+
+.pager a {
+	color: var(--gold);
+	text-decoration: none;
+}
+
+.pager span { color: var(--muted); font-size: 0.92rem; }
+
+.foot {
+	padding: 28px 0 40px;
+	color: var(--muted);
+	font-size: 0.85rem;
+}
+
+@media (max-width: 960px) {
+	.board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+	.board { grid-template-columns: 1fr; }
+	.ticket { grid-template-columns: 72px 1fr; }
+	.ticket::before { left: 72px; }
+	.ticket-body h2 { font-size: 1.35rem; }
+	.price { font-size: 1.3rem; }
+}

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<body>
+<main class="detail">
+	<p class="eyebrow">Tickets</p>
+	<h1>Open a ticket</h1>
+	<p class="lede">Paste your ticket code from an order (not a coupon). Coupons are applied on the event page when you buy.</p>
+	<form class="form" th:action="@{/tickets}" method="get">
+		<label class="field">Code <input type="text" name="code" required></label>
+		<button class="button" type="submit">Open</button>
+	</form>
+</main>
+</body>
+</html>

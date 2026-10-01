@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<body>
+<main class="detail">
+	<p class="eyebrow">Account</p>
+	<h1>Log in</h1>
+	<p class="notice" th:if="${notice}" th:text="${notice}">Account created.</p>
+	<p class="alert" th:if="${param.limited}">Too many attempts. Wait a minute and try again.</p>
+	<p class="alert" th:if="${error}" th:text="${error}">Invalid email or password</p>
+	<form class="form" th:action="@{/login}" method="post">
+		<th:block th:replace="~{fragments :: csrf}"></th:block>
+		<label class="field">Email <input type="email" name="email" required></label>
+		<label class="field">Password <input type="password" name="password" required></label>
+		<button class="button" type="submit">Log in</button>
+	</form>
+	<p class="quiet">No account yet? <a th:href="@{/register}">Register</a></p>
+</main>
+</body>
+</html>

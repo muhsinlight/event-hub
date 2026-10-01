@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<body>
+<main class="detail">
+	<a class="back" th:href="@{/tickets}">All tickets</a>
+	<p class="alert" th:if="${error}" th:text="${error}">Could not check in</p>
+	<p class="status" th:text="${ticket.status}" th:classappend="${'is-' + #strings.toLowerCase(ticket.status)}">ISSUED</p>
+	<h1 th:text="${ticket.code}">code</h1>
+	<img class="qr" th:src="@{/api/tickets/{code}/qr(code=${ticket.code})}" alt="Ticket QR">
+	<form th:if="${account != null and account.seller() and ticket.status.name() == 'ISSUED'}"
+			th:action="@{/tickets/{code}/check-in(code=${ticket.code})}" method="post">
+		<th:block th:replace="~{fragments :: csrf}"></th:block>
+		<button class="button" type="submit">Check in</button>
+	</form>
+</main>
+</body>
+</html>

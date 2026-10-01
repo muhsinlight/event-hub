@@ -1,0 +1,22 @@
+---
+description: REST controller patterns for Event Hub
+globs: "**/controller/**/*.java"
+alwaysApply: false
+---
+
+# Controllers
+
+Keep thin: validate, call one service method, wrap with `ApiResponse`.
+
+```java
+return ApiResponse.<EventResponse>builder()
+		.status(HttpStatus.CREATED)
+		.message("Event created")
+		.data(eventService.create(request))
+		.response();
+```
+
+- `@Valid` on `@RequestBody`. Path: `/api/{resource}`.
+- Auth identity: `Authentication authentication` → `authentication.getName()` (email).
+- New write endpoints need JWT unless they belong under `/api/auth/**` or are public GETs already listed in `SecurityConfig`.
+- Details: `.cursor/skills/event-hub/api.md`

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<body>
+<main class="detail">
+	<p class="eyebrow">Buyer</p>
+	<h1>Orders</h1>
+	<p class="alert" th:if="${error}" th:text="${error}">Could not cancel</p>
+
+	<section th:if="${purchased != null}">
+		<h2>Tickets just issued</h2>
+		<ul class="codes">
+			<li th:each="ticket : ${purchased}">
+				<a th:href="@{/tickets/{code}(code=${ticket.code})}" th:text="${ticket.code}">code</a>
+				<span th:text="${ticket.status}">ISSUED</span>
+			</li>
+		</ul>
+	</section>
+
+	<section class="types" th:if="${!orders.empty}">
+		<ul>
+		<li th:each="order : ${orders.content}">
+			<div>
+				<strong th:text="|Order ${order.id}|">Order 1</strong>
+				<span th:text="${order.status}">CONFIRMED</span>
+				<span th:text="|${order.quantity} · ${#numbers.formatDecimal(order.amount, 1, 'COMMA', 2, 'POINT')}|">2 · 50.00</span>
+			</div>
+			<div class="type-side">
+				<a th:if="${order.status.name() == 'AWAITING_PAYMENT'}" class="button" th:href="@{/orders/{id}/pay(id=${order.id})}">Pay</a>
+				<form th:if="${order.status.name() == 'CONFIRMED' or order.status.name() == 'AWAITING_PAYMENT'}"
+						th:action="@{/orders/{id}/cancel(id=${order.id})}" method="post">
+					<th:block th:replace="~{fragments :: csrf}"></th:block>
+					<button class="button" type="submit">Cancel</button>
+				</form>
+			</div>
+		</li>
+		</ul>
+	</section>
+	<p class="quiet" th:if="${orders.empty}">No orders yet.</p>
+	<nav th:replace="~{fragments :: pager(${orders}, '/orders')}"></nav>
+</main>
+</body>
+</html>
