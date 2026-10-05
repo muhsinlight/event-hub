@@ -1,9 +1,9 @@
 package dev.takuma.event_hub.web;
 
-public record PageAccount(boolean seller, boolean admin) {
+public record PageAccount(String name, boolean seller, boolean admin) {
 
 	public boolean buyer() {
-		return admin || !seller;
+		return true;
 	}
 
 }

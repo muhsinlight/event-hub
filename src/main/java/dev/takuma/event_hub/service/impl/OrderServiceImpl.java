@@ -10,6 +10,7 @@ import dev.takuma.event_hub.entity.Payment;
 import dev.takuma.event_hub.entity.Ticket;
 import dev.takuma.event_hub.entity.TicketType;
 import dev.takuma.event_hub.entity.User;
+import dev.takuma.event_hub.repository.CheckoutCodeRepository;
 import dev.takuma.event_hub.repository.OrderRepository;
 import dev.takuma.event_hub.repository.PaymentRepository;
 import dev.takuma.event_hub.repository.TicketRepository;
@@ -36,18 +37,21 @@ public class OrderServiceImpl implements OrderService {
 	private final TicketRepository ticketRepository;
 	private final TicketTypeRepository ticketTypeRepository;
 	private final PaymentRepository paymentRepository;
+	private final CheckoutCodeRepository checkoutCodeRepository;
 	private final QrService qrService;
 	private final UserRepository userRepository;
 	private final MailService mailService;
 	private final Clock clock;
 
 	public OrderServiceImpl(OrderRepository orderRepository, TicketRepository ticketRepository,
-			TicketTypeRepository ticketTypeRepository, PaymentRepository paymentRepository, QrService qrService,
-			UserRepository userRepository, MailService mailService, Clock clock) {
+			TicketTypeRepository ticketTypeRepository, PaymentRepository paymentRepository,
+			CheckoutCodeRepository checkoutCodeRepository, QrService qrService, UserRepository userRepository,
+			MailService mailService, Clock clock) {
 		this.orderRepository = orderRepository;
 		this.ticketRepository = ticketRepository;
 		this.ticketTypeRepository = ticketTypeRepository;
 		this.paymentRepository = paymentRepository;
+		this.checkoutCodeRepository = checkoutCodeRepository;
 		this.qrService = qrService;
 		this.userRepository = userRepository;
 		this.mailService = mailService;
@@ -96,6 +100,10 @@ public class OrderServiceImpl implements OrderService {
 		Order order = lockedOrder(id, email);
 		if (!order.isAwaitingPayment()) {
 			throw ApiException.conflict("Order is not awaiting payment");
+		}
+		String checkoutCode = request.code() == null ? "" : request.code().trim();
+		if (!checkoutCodeRepository.existsByCodeIgnoreCase(checkoutCode)) {
+			throw ApiException.badRequest("Invalid checkout code");
 		}
 		Instant now = clock.instant();
 		CardPayment.Decision decision = CardPayment.authorize(request.cardNumber(), request.expiry(), request.cvc(),

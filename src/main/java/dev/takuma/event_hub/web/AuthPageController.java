@@ -43,9 +43,12 @@ public class AuthPageController {
 
 	@PostMapping("/login")
 	public String login(@Valid @ModelAttribute LoginRequest loginRequest, BindingResult binding, Model model,
-			HttpServletResponse response) {
+			Authentication authentication, HttpServletResponse response) {
 		model.addAttribute("pageTitle", "Log in");
+		revokeCurrentSession(authentication);
+		model.addAttribute("account", null);
 		if (binding.hasErrors()) {
+			AccessCookie.clear(response, secureCookie);
 			model.addAttribute("error", Forms.validationMessage(binding));
 			return "login";
 		}
@@ -55,6 +58,7 @@ public class AuthPageController {
 			return "redirect:/";
 		}
 		catch (ApiException exception) {
+			AccessCookie.clear(response, secureCookie);
 			Pages.addApiError(model, exception);
 			return "login";
 		}
@@ -88,11 +92,15 @@ public class AuthPageController {
 
 	@PostMapping("/logout")
 	public String logout(Authentication authentication, HttpServletResponse response) {
+		revokeCurrentSession(authentication);
+		AccessCookie.clear(response, secureCookie);
+		return "redirect:/";
+	}
+
+	private void revokeCurrentSession(Authentication authentication) {
 		if (authentication != null && authentication.getPrincipal() instanceof SecurityUser) {
 			authService.logout(CurrentSession.requireId(authentication));
 		}
-		AccessCookie.clear(response, secureCookie);
-		return "redirect:/";
 	}
 
 }

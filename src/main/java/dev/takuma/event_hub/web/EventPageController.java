@@ -55,13 +55,14 @@ public class EventPageController {
 	}
 
 	@GetMapping("/events/{id}")
-	public ModelAndView show(@PathVariable Long id) {
+	public ModelAndView show(@PathVariable Long id, Authentication authentication) {
+		String viewer = authentication == null ? null : authentication.getName();
 		try {
 			ModelAndView page = new ModelAndView("event");
-			EventResponse event = eventService.findById(id, null);
+			EventResponse event = eventService.findById(id, viewer);
 			page.addObject("pageTitle", event.name());
 			page.addObject("event", event);
-			page.addObject("ticketTypes", ticketTypeService.findByEventId(id, null));
+			page.addObject("ticketTypes", ticketTypeService.findByEventId(id, viewer));
 			return page;
 		}
 		catch (ApiException exception) {

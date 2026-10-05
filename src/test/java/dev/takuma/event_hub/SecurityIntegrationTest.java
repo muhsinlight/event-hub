@@ -7,6 +7,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -35,7 +36,7 @@ class SecurityIntegrationTest extends ApiIntegrationTest {
 				.param("email", "buyer@test.dev")
 				.param("password", PASSWORD))
 				.andExpect(status().isFound())
-				.andExpect(redirectedUrl("/?denied"));
+				.andExpect(redirectedUrl("/forbidden"));
 	}
 
 	@Test
@@ -61,6 +62,8 @@ class SecurityIntegrationTest extends ApiIntegrationTest {
 				.andExpect(status().isOk())
 				.andExpect(content().string(containsString("Tickets")));
 		perform(get("/events/{id}", draftId)).andExpect(status().isNotFound());
+		perform(get("/events/{id}", draftId).header(HttpHeaders.COOKIE, "access_token=" + seller))
+				.andExpect(status().isOk());
 	}
 
 	@Test
@@ -84,6 +87,78 @@ class SecurityIntegrationTest extends ApiIntegrationTest {
 				.andExpect(content().string(containsString("Orders")));
 		perform(get("/login")).andExpect(status().isOk()).andExpect(content().string(containsString("Register")));
 		perform(get("/register")).andExpect(status().isOk()).andExpect(content().string(containsString("Create account")));
+	}
+
+	@Test
+	void failedPageLoginEndsTheExistingSession() throws Exception {
+		String email = register(Role.USER);
+		String token = pageLogin(email, PASSWORD);
+
+		perform(post("/login").with(csrf()).header(HttpHeaders.COOKIE, "access_token=" + token)
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("email", "nobody-" + UUID.randomUUID() + "@test.dev")
+				.param("password", "1"))
+				.andExpect(status().isOk())
+				.andExpect(content().string(containsString("Invalid email or password")))
+				.andExpect(content().string(not(containsString("href=\"/profile\""))));
+
+		perform(get("/orders").header(HttpHeaders.COOKIE, "access_token=" + token))
+				.andExpect(status().isFound())
+				.andExpect(redirectedUrl("/login"));
+	}
+
+	@Test
+	void pageLogoutEndsTheSessionAndClearsTheCookie() throws Exception {
+		String email = register(Role.USER);
+		String token = pageLogin(email, PASSWORD);
+
+		perform(post("/logout").header(HttpHeaders.COOKIE, "access_token=" + token))
+				.andExpect(status().isFound())
+				.andExpect(redirectedUrl("/"))
+				.andExpect(header().stringValues(HttpHeaders.SET_COOKIE, hasItem(containsString("access_token=;"))));
+
+		perform(get("/profile").header(HttpHeaders.COOKIE, "access_token=" + token))
+				.andExpect(status().isFound())
+				.andExpect(redirectedUrl("/login"));
+	}
+
+	@Test
+	void signedInPageRequestsKeepTheCsrfCookie() throws Exception {
+		String email = register(Role.USER);
+		String token = pageLogin(email, PASSWORD);
+		String cookies = "access_token=" + token + "; XSRF-TOKEN=" + UUID.randomUUID();
+
+		for (String path : new String[] { "/", "/register", "/profile", "/css/app.css" }) {
+			perform(get(path).header(HttpHeaders.COOKIE, cookies))
+					.andExpect(header().stringValues(HttpHeaders.SET_COOKIE,
+							not(hasItem(containsString("XSRF-TOKEN=")))));
+		}
+	}
+
+	@Test
+	void profileShowsTheSignedInUser() throws Exception {
+		perform(get("/profile")).andExpect(status().isFound()).andExpect(redirectedUrl("/login"));
+
+		String email = register(Role.USER);
+		String token = pageLogin(email, PASSWORD);
+
+		perform(get("/profile").header(HttpHeaders.COOKIE, "access_token=" + token))
+				.andExpect(status().isOk())
+				.andExpect(content().string(containsString(email)))
+				.andExpect(content().string(containsString("href=\"/profile\"")));
+	}
+
+	private String pageLogin(String email, String password) throws Exception {
+		MvcResult login = perform(post("/login").with(csrf()).contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("email", email)
+				.param("password", password))
+				.andExpect(status().isFound())
+				.andReturn();
+		String setCookie = login.getResponse().getHeaders(HttpHeaders.SET_COOKIE).stream()
+				.filter(value -> value.startsWith("access_token="))
+				.findFirst()
+				.orElseThrow();
+		return setCookie.substring("access_token=".length(), setCookie.indexOf(';'));
 	}
 
 	@Test
@@ -132,12 +207,12 @@ class SecurityIntegrationTest extends ApiIntegrationTest {
 	}
 
 	@Test
-	void sellerCannotBuyTickets() throws Exception {
+	void sellerCanBuyTickets() throws Exception {
 		String seller = tokenFor(Role.SELLER);
 		long eventId = createEvent(seller, "PUBLISHED");
 		long ticketTypeId = createTicketType(seller, eventId, 10);
 
-		purchase(seller, ticketTypeId, 1).andExpect(status().isForbidden());
+		purchase(seller, ticketTypeId, 1).andExpect(status().isCreated());
 	}
 
 	@Test
@@ -200,10 +275,11 @@ class SecurityIntegrationTest extends ApiIntegrationTest {
 				.andExpect(jsonPath("$.components").doesNotExist());
 
 		perform(get("/actuator/info"))
-				.andExpect(status().isUnauthorized())
-				.andExpect(jsonPath("$.message").value("Unauthorized"));
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.message").value("Not found"));
 		perform(authorized(get("/actuator/info"), tokenFor(Role.USER)))
-				.andExpect(status().isForbidden());
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.message").value("Not found"));
 		perform(authorized(get("/actuator/health"), tokenFor(Role.USER)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.components").doesNotExist());

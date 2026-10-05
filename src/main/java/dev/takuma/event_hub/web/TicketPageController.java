@@ -8,7 +8,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -22,13 +21,11 @@ public class TicketPageController {
 	}
 
 	@GetMapping("/tickets")
-	public ModelAndView lookup(@RequestParam(required = false) String code) {
-		if (code == null || code.isBlank()) {
-			ModelAndView page = new ModelAndView("ticket-lookup");
-			page.addObject("pageTitle", "Tickets");
-			return page;
-		}
-		return new ModelAndView("redirect:/tickets/" + code.trim());
+	public ModelAndView list(Authentication authentication) {
+		ModelAndView page = new ModelAndView("tickets");
+		page.addObject("pageTitle", "Tickets");
+		page.addObject("tickets", ticketService.findVisibleTo(authentication.getName()));
+		return page;
 	}
 
 	@GetMapping("/tickets/{code}")

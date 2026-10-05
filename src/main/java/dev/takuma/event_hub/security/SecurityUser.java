@@ -40,6 +40,10 @@ public final class SecurityUser implements UserDetails {
 		return user.getEmail();
 	}
 
+	public String getDisplayName() {
+		return user.getName();
+	}
+
 	public Long getSessionId() {
 		return sessionId;
 	}

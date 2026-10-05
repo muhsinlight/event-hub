@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<body>
+<main class="detail">
+	<p class="eyebrow">Tickets</p>
+	<h1>Your tickets</h1>
+	<p class="alert" th:if="${error}" th:text="${error}">Could not open ticket</p>
+	<section class="types" th:if="${!tickets.isEmpty()}">
+		<ul>
+			<li th:each="ticket : ${tickets}">
+				<div>
+					<a th:href="@{/tickets/{code}(code=${ticket.code})}" th:text="${ticket.code}">code</a>
+					<span th:text="${ticket.status}">ISSUED</span>
+				</div>
+			</li>
+		</ul>
+	</section>
+	<p class="quiet" th:if="${tickets.isEmpty()}">No tickets yet. Pay an order to issue one.</p>
+</main>
+</body>
+</html>

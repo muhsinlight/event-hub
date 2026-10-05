@@ -20,6 +20,7 @@ import dev.takuma.event_hub.entity.Order;
 import dev.takuma.event_hub.entity.Payment;
 import dev.takuma.event_hub.entity.Ticket;
 import dev.takuma.event_hub.entity.TicketType;
+import dev.takuma.event_hub.repository.CheckoutCodeRepository;
 import dev.takuma.event_hub.repository.OrderRepository;
 import dev.takuma.event_hub.repository.PaymentRepository;
 import dev.takuma.event_hub.repository.TicketRepository;
@@ -56,6 +57,9 @@ class OrderServiceImplTest {
 
 	@Mock
 	private PaymentRepository paymentRepository;
+
+	@Mock
+	private CheckoutCodeRepository checkoutCodeRepository;
 
 	@Mock
 	private QrService qrService;
@@ -104,6 +108,8 @@ class OrderServiceImplTest {
 		when(paymentRequest.cardNumber()).thenReturn("4242424242424242");
 		when(paymentRequest.expiry()).thenReturn("12/30");
 		when(paymentRequest.cvc()).thenReturn("123");
+		when(paymentRequest.code()).thenReturn("EH-OK-001");
+		when(checkoutCodeRepository.existsByCodeIgnoreCase("EH-OK-001")).thenReturn(true);
 		when(clock.instant()).thenReturn(Instant.parse("2026-09-30T12:00:00Z"));
 		when(paymentRepository.save(any(Payment.class))).thenAnswer(returnsFirstArg());
 		when(ticketRepository.save(any(Ticket.class))).thenAnswer(returnsFirstArg());
@@ -130,6 +136,8 @@ class OrderServiceImplTest {
 		when(paymentRequest.cardNumber()).thenReturn("4000000000000002");
 		when(paymentRequest.expiry()).thenReturn("12/30");
 		when(paymentRequest.cvc()).thenReturn("123");
+		when(paymentRequest.code()).thenReturn("EH-OK-001");
+		when(checkoutCodeRepository.existsByCodeIgnoreCase("EH-OK-001")).thenReturn(true);
 		when(clock.instant()).thenReturn(Instant.parse("2026-09-30T12:00:00Z"));
 
 		assertThatThrownBy(() -> orderService.pay(ORDER_ID, TestData.BUYER_EMAIL, paymentRequest))
@@ -139,6 +147,21 @@ class OrderServiceImplTest {
 		assertThat(order.getStatus()).isEqualTo(Order.Status.AWAITING_PAYMENT);
 		verify(ticketRepository, never()).save(any(Ticket.class));
 		verify(mailService, never()).sendPurchaseConfirmation(any(MailService.PurchaseEmail.class));
+	}
+
+	@Test
+	void payRejectsUnknownCheckoutCode() {
+		TicketType ticketType = TestData.ticketType(TestData.publishedEvent(), 10);
+		Order order = Order.awaitingPayment(TestData.buyer(), ticketType, 1);
+		when(orderRepository.findByIdForUpdate(ORDER_ID)).thenReturn(Optional.of(order));
+		when(paymentRequest.code()).thenReturn("NOPE");
+		when(checkoutCodeRepository.existsByCodeIgnoreCase("NOPE")).thenReturn(false);
+
+		assertThatThrownBy(() -> orderService.pay(ORDER_ID, TestData.BUYER_EMAIL, paymentRequest))
+				.isInstanceOf(ApiException.class)
+				.hasMessage("Invalid checkout code")
+				.extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
+		verify(ticketRepository, never()).save(any(Ticket.class));
 	}
 
 	@Test

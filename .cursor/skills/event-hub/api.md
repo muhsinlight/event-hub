@@ -50,8 +50,8 @@ Identity = `authentication.getName()` (email).
 
 | Method | Path | Body | Data |
 |---|---|---|---|
-| POST | `/` | `{ ticketTypeId, quantity }` quantity > 0. `USER` role only | `OrderResponse` AWAITING_PAYMENT (`quantity`, `amount`). Reserves quota. 201 |
-| POST | `/{id}/pay` | `{ cardNumber, expiry, cvc }` `MM/YY`. Demo only: `4242424242424242` pays, a number ending `0002` declines (402). No card number is stored | `List<TicketResponse>` with `qr` base64. 201. After commit, Resend emails ticket codes |
+| POST | `/` | `{ ticketTypeId, quantity }` quantity > 0. `USER`, `SELLER`, or `ADMIN` | `OrderResponse` AWAITING_PAYMENT (`quantity`, `amount`). Reserves quota. 201 |
+| POST | `/{id}/pay` | `{ cardNumber, expiry, cvc, code }` `MM/YY`. Demo card `4242424242424242` pays; a number ending `0002` declines (402). `code` must match `checkout_codes` (`EH-OK-001`, `EH-OK-002`, `DEMO2026`). No card number is stored | `List<TicketResponse>` with `qr` base64. 201. After commit, Resend emails ticket codes |
 | GET | `/?page=&size=&sort=` | — | `PageResponse<OrderResponse>` for that email. Default `size=20`, `sort=id,desc` |
 | POST | `/{id}/cancel` | — | cancelled `OrderResponse` |
 

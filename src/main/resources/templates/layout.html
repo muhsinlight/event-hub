@@ -22,11 +22,8 @@
 			<a th:if="${account != null and account.admin()}" th:href="@{/admin/users}">People</a>
 			<a th:if="${account != null}" th:href="@{/tickets}">Tickets</a>
 			<a th:if="${account == null}" th:href="@{/login}">Log in</a>
-			<form th:if="${account != null}" th:action="@{/logout}" method="post">
-				<th:block th:replace="~{fragments :: csrf}"></th:block>
-				<button type="submit">Log out</button>
-			</form>
-			<a th:if="${account != null and account.admin()}" th:href="@{/swagger-ui/index.html}">API</a>
+			<a th:if="${account != null}" th:href="@{/profile}" th:text="${account.name()}">Profile</a>
+			<a th:if="${account != null and account.admin()}" th:href="@{/swagger-ui/index.html}">Swagger</a>
 		</nav>
 	</header>
 	<div th:replace="${content}">Page</div>

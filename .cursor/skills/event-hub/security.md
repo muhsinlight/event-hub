@@ -9,9 +9,11 @@ Filter is a `@Component` but `FilterRegistrationBean` is **disabled** so it is n
 Permit all:
 
 - `/error` (so Spring's error dispatch is not turned into 401)
+- `GET /forbidden`, `GET /not-found`
 - `GET /`, `GET /events/**` except `GET /events/new`, `GET /favicon.ico`, `/css/**`, `/js/**`, `/images/**`
 - `GET` and `POST /login`, `/register`
-- Page login writes an HttpOnly `access_token` cookie (`SameSite=Lax`). `JwtAuthenticationFilter` accepts that cookie when the `Authorization` header is absent. `/api/**` still uses `Bearer`. Unauthenticated page requests redirect to `/login`; wrong role redirects to `/?denied`. API requests stay JSON 401/403.
+- Page login first revokes any session already in the cookie; a failed attempt also clears the cookie, so a wrong password never leaves the previous user signed in. `GET /profile` (authenticated) shows the current user; the nav links to it with the user's name. Log out lives only on the profile page.
+- Page login writes an HttpOnly `access_token` cookie (`SameSite=Lax`). `JwtAuthenticationFilter` accepts that cookie when the `Authorization` header is absent. `/api/**` still uses `Bearer`. Unauthenticated page requests redirect to `/login`. Unauthenticated `/swagger-ui/**` also redirects to `/login`. Wrong role or CSRF failure on a page redirects to `/forbidden` (HTTP 403). `/v3/api-docs`, `/admin/**`, `/swagger-ui/**` for a signed-in non-admin, and `/actuator/**` except public health answer 404 (`Not found`). Other API requests stay JSON 401/403.
 - `/api/auth/**` (logout still requires a valid Bearer access token; the controller returns 401 without one)
 - `GET /api/events/**` (includes `GET /api/events/{id}/ticket-types`)
 - `GET /api/tickets/*/qr`
@@ -20,10 +22,10 @@ Permit all:
 Role rules:
 
 - `POST /api/events`, `POST /api/events/*/ticket-types`, `POST /api/tickets/*/check-in`, and the matching page routes → `SELLER` or `ADMIN`
-- `POST /api/orders` and the matching page routes → `USER` or `ADMIN`
+- `POST /api/orders` and the matching page routes → `USER`, `SELLER`, or `ADMIN`
 - `/api/users/**`, `GET /admin/users`, `POST /admin/users/*/role`, `/swagger-ui/**`, `/swagger-ui.html`, `/v3/api-docs/**`, `/actuator/**` except public health → `ADMIN`
 
-`anyRequest().authenticated()`. CSRF is on for browser forms (cookie repository, `Secure` when `COOKIE_SECURE=true`) and ignored for `/api/**`, which accepts only `Authorization: Bearer` — the access cookie is not read on `/api/**`. Session `STATELESS`. `POST /login` and `POST /register` (page and API) allow 10 attempts per minute per client address. Ownership (seller owns event, buyer owns order) is checked in services, not in `SecurityConfig`.
+`anyRequest().authenticated()`. CSRF stays on for `POST /login` and `POST /register` (cookie repository, `Secure` when `COOKIE_SECURE=true`). It is ignored for `/api/**` (Bearer only) and for signed-in page posts (`/orders/**`, `/events/**`, `/tickets/**`, `/logout`, `/admin/**`) — those rely on the `SameSite=Lax` access cookie. Session `STATELESS`. `POST /login` and `POST /register` (page and API) allow 10 attempts per minute per client address. Ownership (seller owns event, buyer owns order) is checked in services, not in `SecurityConfig`.
 
 CORS (`CorsConfig`, applied on the filter chain): `/api/**` from `http://localhost:*` and `http://127.0.0.1:*`. Methods `GET`, `POST`, `OPTIONS`. Headers `Authorization`, `Content-Type`. Same-origin Thymeleaf pages do not send a CORS request; this covers a browser on another port.
 

@@ -112,7 +112,7 @@ public abstract class ApiIntegrationTest {
 	protected ResultActions pay(String token, long orderId, String cardNumber) throws Exception {
 		return perform(authorized(post("/api/orders/{id}/pay", orderId), token).contentType(MediaType.APPLICATION_JSON)
 				.content("""
-						{ "cardNumber": "%s", "expiry": "12/30", "cvc": "123" }
+						{ "cardNumber": "%s", "expiry": "12/30", "cvc": "123", "code": "EH-OK-001" }
 						""".formatted(cardNumber)));
 	}
 

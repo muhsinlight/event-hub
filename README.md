@@ -8,10 +8,11 @@ Spring Boot ticket platform: events, quotas, JWT auth, demo card payments, QR ti
 - **Events:** draft → published; ticket types with price and quota
 - **Orders:** reserve quota → pay (demo gateway) → issued tickets with QR codes
 - **Email:** purchase confirmation via [Resend](https://resend.com)
-- **Security:** JWT access + refresh sessions, CSRF on HTML forms, rate-limited login/register
+- **Account:** the signed-in user's name in the header links to `/profile` (name, email, role, log out)
+- **Security:** JWT access + refresh sessions, CSRF on HTML forms, rate-limited login/register. A failed login or log out revokes the current session and clears the cookie
 - **Schema:** PostgreSQL + Flyway (`ddl-auto=validate`)
 
-Payment is **simulated** (no real bank). Card numbers ending in **`0002`** are declined.
+Payment is **simulated** (no real bank). Checkout needs a code from `checkout_codes` — seeded with `EH-OK-001`, `EH-OK-002`, `DEMO2026`. Card numbers ending in **`0002`** are declined.
 
 ## Stack
 
@@ -53,7 +54,14 @@ Payment is **simulated** (no real bank). Card numbers ending in **`0002`** are d
 
    Windows: `mvnw.cmd spring-boot:run`
 
-4. Open [http://localhost:8080](http://localhost:8080). Bootstrap admin uses `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.env` (see `.env.example`).
+4. Open [http://localhost:8080](http://localhost:8080). Bootstrap admin uses `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.env` (see `.env.example`). The admin is only created when that email does not exist yet; changing `ADMIN_PASSWORD` later does not update an existing account.
+
+### Try the flow
+
+1. Log in as admin → **People** → **Make seller** on a registered account.
+2. As the seller → **New event** (status `PUBLISHED`) → add a ticket type with price and quota.
+3. As a buyer → open the event → buy → pay with any valid test card (e.g. `4242 4242 4242 4242`, `12/30`, `123`) and code `EH-OK-001`.
+4. **Tickets** shows the codes and QR. The seller opens a ticket and presses **Check in**.
 
 ### Tests
 
@@ -61,7 +69,7 @@ Payment is **simulated** (no real bank). Card numbers ending in **`0002`** are d
 ./mvnw clean test
 ```
 
-Docker must be running (Testcontainers PostgreSQL).
+Docker must be running (Testcontainers PostgreSQL). Tests use `src/test/resources/application-test.properties`, but a local `.env` is still imported; CI has no `.env`, so a test that only passes with your `.env` will fail there.
 
 ## Configuration
 

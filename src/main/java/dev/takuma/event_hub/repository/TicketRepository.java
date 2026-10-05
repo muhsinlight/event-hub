@@ -19,4 +19,14 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
 	List<Ticket> findByOrderId(Long orderId);
 
+	@Query("""
+			select ticket from Ticket ticket
+			join ticket.order buyerOrder
+			join ticket.ticketType ticketType
+			join ticketType.event event
+			where buyerOrder.buyerEmail = :email or event.seller.email = :email
+			order by ticket.id desc
+			""")
+	List<Ticket> findVisibleTo(@Param("email") String email);
+
 }

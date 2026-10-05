@@ -11,4 +11,6 @@ public interface UserService {
 
 	UserResponse assignRole(String adminEmail, Long userId, Role role);
 
+	UserResponse findByEmail(String email);
+
 }

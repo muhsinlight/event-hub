@@ -37,11 +37,11 @@ Constructor injection only. Controllers stay thin and never see entities.
 
 ## Domain snapshot
 
-`User` (email unique, BCrypt password, role `USER`, `SELLER`, or `ADMIN`) authenticates. Registration always creates `USER`. `ADMIN` passes every role gate and grants `SELLER`. Login issues a short-lived access JWT bound to an `AuthSession` plus a refresh token. `USER` buys tickets. `SELLER` creates events, adds ticket types, checks tickets in. Role rules live in `SecurityConfig`; ownership rules live on entities (`Event.ownedBy`, `Order.ownedBy`, `Ticket.visibleTo`).
+`User` (email unique, BCrypt password, role `USER`, `SELLER`, or `ADMIN`) authenticates. Registration always creates `USER`. `ADMIN` passes every role gate and grants `SELLER`. Login issues a short-lived access JWT bound to an `AuthSession` plus a refresh token. `USER` and `SELLER` can buy tickets. `SELLER` also creates events, adds ticket types, and checks tickets in. Role rules live in `SecurityConfig`; ownership rules live on entities (`Event.ownedBy`, `Order.ownedBy`, `Ticket.visibleTo`).
 
 `Event` (DRAFT | PUBLISHED | CANCELLED, owned by a `seller`) has `TicketType`s (price, quota, soldCount). DRAFT is visible only to its seller.
 
-Purchase (JWT required): lock ticket type → event must be PUBLISHED → quota check → reserve `soldCount` → `Order` AWAITING_PAYMENT. `POST /api/orders/{id}/pay` checks the card (demo, no bank), then CONFIRMED → N `Ticket`s (UUID `code`, ISSUED) → after commit, email ticket codes via Resend. Card ending `0002` declines and keeps the reservation. Cancel of AWAITING_PAYMENT releases the quota; cancel of CONFIRMED cancels ISSUED tickets and decrements quota. Check-in: ISSUED → CHECKED_IN.
+Purchase (JWT required): lock ticket type → event must be PUBLISHED → quota check → reserve `soldCount` → `Order` AWAITING_PAYMENT. `POST /api/orders/{id}/pay` checks a checkout code (`checkout_codes`) then the card (demo, no bank), then CONFIRMED → N `Ticket`s (UUID `code`, ISSUED) → after commit, email ticket codes via Resend. Card ending `0002` declines and keeps the reservation. Cancel of AWAITING_PAYMENT releases the quota; cancel of CONFIRMED cancels ISSUED tickets and decrements quota. Check-in: ISSUED → CHECKED_IN.
 
 ## When changing code
 

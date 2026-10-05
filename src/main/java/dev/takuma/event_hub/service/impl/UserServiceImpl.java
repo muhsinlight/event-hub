@@ -42,6 +42,12 @@ public class UserServiceImpl implements UserService {
 		return UserResponse.from(user);
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public UserResponse findByEmail(String email) {
+		return UserResponse.from(ApiException.orNotFound(userRepository.findByEmail(email), "User not found"));
+	}
+
 	private User requireAdmin(String email) {
 		User admin = ApiException.orNotFound(userRepository.findByEmail(email), "User not found");
 		if (admin.getRole() != Role.ADMIN) {

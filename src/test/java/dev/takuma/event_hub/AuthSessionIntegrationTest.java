@@ -97,11 +97,15 @@ class AuthSessionIntegrationTest extends ApiIntegrationTest {
 
 	@Test
 	void swaggerDocsRequireAdmin() throws Exception {
-		perform(get("/v3/api-docs")).andExpect(status().isFound()).andExpect(redirectedUrl("/login"));
+		perform(get("/swagger-ui/index.html")).andExpect(status().isFound()).andExpect(redirectedUrl("/login"));
+		perform(get("/v3/api-docs"))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.message").value("Not found"));
 		perform(authorized(get("/v3/api-docs"), tokenFor(Role.USER)))
-				.andExpect(status().isFound())
-				.andExpect(redirectedUrl("/?denied"));
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.message").value("Not found"));
 		perform(authorized(get("/v3/api-docs"), adminToken())).andExpect(status().isOk());
+		perform(authorized(get("/swagger-ui/index.html"), adminToken())).andExpect(status().isOk());
 	}
 
 }

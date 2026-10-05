@@ -6,6 +6,8 @@ import dev.takuma.event_hub.repository.TicketRepository;
 import dev.takuma.event_hub.service.QrService;
 import dev.takuma.event_hub.service.TicketService;
 import dev.takuma.event_hub.utils.ApiException;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,18 @@ public class TicketServiceImpl implements TicketService {
 				ticketRepository.findByCode(code).filter(found -> found.visibleTo(viewerEmail)), "Ticket not found");
 		ticket.attachQr(qrService.base64(ticket.getCode()));
 		return TicketResponse.from(ticket);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<TicketResponse> findVisibleTo(String viewerEmail) {
+		List<Ticket> tickets = ticketRepository.findVisibleTo(viewerEmail);
+		List<TicketResponse> responses = new ArrayList<>(tickets.size());
+		for (Ticket ticket : tickets) {
+			ticket.attachQr(qrService.base64(ticket.getCode()));
+			responses.add(TicketResponse.from(ticket));
+		}
+		return responses;
 	}
 
 	@Override
